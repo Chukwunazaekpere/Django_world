@@ -1,28 +1,46 @@
 from django.test import TestCase
-from django.contrib.auth import get_user_model
 
-User = get_user_model()
+from ..models import Categories, Products
 
 
 class TestModels(TestCase):
     def setUp(self):
-        self.user1 = User.objects.create_user(
-            email='dht@fg.com',
-            password='dht456'
+        self.category = Categories()
+        self.product = Products()
+
+        self.food_category = Categories.objects.create(
+            name="Food",
         )
+        self.all_categories = Categories.objects.all()
 
-        self.user2 = User.objects.create_user(
-            email='dhrt@fg.com',
-            password='dht456'
+        self.rice_product = Products.objects.create(
+            category_id=1,
+            name="rice",
+            price="300.45",
         )
+        self.all_products = Products.objects.all()
 
-    def test_User_model_saves_new_users(self):
-        self.assertEquals(User.objects.count(), 2)
+    def test_categories_model_attributes(self):
+        category_name_title = self.category._meta.get_field("name").verbose_name
+        self.assertTrue(category_name_title == "name")
 
-    def test_User_model_fields(self):
-        email_field_title = self.user1._meta.get_field('email').verbose_name
-        self.assertTrue(email_field_title == 'email')
+    def test_categories_save_method(self):
+        self.assertGreaterEqual(Categories.objects.count(), 1)  # objects of Categories model gets saved.
+        self.assertIsNotNone(self.all_categories[0].slug)  # slug field of objects are prepopulated upon save.
 
+    # def test_categories_get_absolute_url(self):
+    #     self.assertEquals(self.all_categories[0].get_absolute_url(), "/shop/categories/food/")
 
+    def test_products_model_attributes(self):
+        product_name_field_title = self.rice_product._meta.get_field('name').verbose_name
+        self.assertTrue(product_name_field_title == 'name')
+
+    def test_product_model_save_method(self):
+        self.assertGreaterEqual(Products.objects.count(), 1)
+
+    def test_product_model_get_absolute_url_method(self):
+        product = Products.objects.all()
+        self.assertEquals(product[0].get_absolute_url(),
+                          f"/shop/categories/product_details/{product[0].slug}/")
 
 
